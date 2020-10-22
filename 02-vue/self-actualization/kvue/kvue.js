@@ -1,14 +1,19 @@
 function defineReactive(obj,key,val) {
   observe(val)
+  //创建Dep实例
+  const dep = new Dep()
   Object.defineProperty(obj,key,{
     get(){
       console.log('get', key, val);
+      //依赖收集
+      Dep.target && dep.addDep(Dep.target)
       return val
     },
     set(newVal){
       if(newVal!==val){
         observe(newVal)
         val=newVal
+        dep.notify()
       }
       console.log('set', key, val);
     }
@@ -21,15 +26,39 @@ function observe(obj) {
   }
   //遍历obj所有key 做响应式处理
   // Object.keys(obj).forEach(key=>defineReactive(obj,key,obj[key]))
-
-  new Observe(this.$data)
+  // console.log(this.$data)
+  new Observe(obj)
 }
 
 class Observe{
   constructor(value){
     this.value = value
-    if(Array.isArray(value)){}
+    if(Array.isArray(value)){
+
+    }else{
+      this.walk(value)
+    }
   }
+
+  walk(obj){
+    //遍历obj所有key 做响应式处理
+    Object.keys(obj).forEach(key=>defineReactive(obj,key,obj[key]))
+  }
+}
+
+function  proxy(vm) {
+  Object.keys(vm.$data).forEach(key=>{
+    Object.defineProperty(vm,key,{
+      get(){
+        return vm.$data[key]
+      },
+      set(newVal){
+        if(vm.$data[key]!==newVal){
+          vm.$data[key] = newVal
+        }
+      }
+    })
+  })
 }
 
 // Kvue
@@ -42,6 +71,114 @@ class Vue {
 
     //data 响应式处理
     observe(this.$data)
+
+    //代理
+    proxy(this)
+
+    //compile
+    new Compile(options.el,this)
   }
 }
 
+class Compile{
+  constructor(el,vm){
+    this.$vm = vm;
+    this.$el = document.querySelector(el)
+
+    if(this.$el){
+      this.compile(this.$el)
+    }
+  }
+
+  compile(el){
+    // 遍历el子节点，判断它们类型作相应的处理
+    const childNodes = el.childNodes
+
+    childNodes.forEach(node=>{
+      if(node.nodeType === 1){
+        // 元素
+        // console.log('元素',node.nodeName);
+        // 处理指令和事件
+        const attrs = node.attributes
+        Array.from(attrs).forEach(attr=>{
+          // k-xxx="abc"
+          const attrName = attr.name
+          const exp = attr.value
+          if(attrName.startsWith('k-')){
+            const dir = attrName.substring(2)
+            console.log(dir);
+            
+            // this[dir]&&this[dir](node,exp)
+            this.update(node,exp,dir)
+          }
+        })
+      }else if(this.isInter(node)){
+        // 文本
+        console.log('插值',node.textContent);
+        // this.compileText(node)
+        this.update(node,RegExp.$1,'text')
+      }
+      if(node.childNodes){
+        this.compile(node)
+      }
+    })
+  }
+
+  update(node,exp,dir){
+    // 初始化
+    const fn = this[dir+"Updater"]
+    fn&&fn(node,this.$vm[exp])
+    // 更新
+    new Watcher(this.$vm,exp,function(val){
+      fn&&fn(node,val)
+    })
+  }
+
+  textUpdater(node,value){
+    node.textContent = value
+  }
+
+  htmlUpdater(node,value){
+    node.innerHTML = value
+  }
+
+  //是否是插值表达式 
+  isInter(node){
+    return node.nodeType ===3 && /\{\{(.*)\}\}/.test(node.textContent)
+  }
+
+}
+
+//监听器： 负责依赖更新
+class Watcher{
+  constructor(vm,key,updateFn){
+    this.vm = vm
+    this.key = key
+    this.updateFn = updateFn
+
+    // 触发依赖收集
+    Dep.target = this
+    this.vm[this.key]
+    Dep.target = null
+  }
+
+  // 未来被Dep调用
+  update(){
+    // 执行实际更新操作
+    this.updateFn.call(this.vm,this.vm[this.key])
+  }
+}
+
+class Dep {
+  constructor(){
+    this.deps = []
+  }
+
+  addDep(dep){
+    this.deps.push(dep)
+  }
+
+  notify(){
+    this.deps.forEach(dep=>dep.update())
+  }
+}
