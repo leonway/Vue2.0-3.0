@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+  #app{
+    font-size: 50px;
+  }
+</style>
+<body>
+  <div id="app">
+    <div>{{counter}}</div>
+    <div>{{counter}}</div>
+    <div>{{counter}}</div>
+  </div>
+<!-- <script src="../node_modules/vue/dist/vue.js"></script> -->
+<script src="./kvue.js"></script>
+<script>
+ const app = new Vue({
+   el:'#app',
+   data:{
+     counter:0
+   }
+ })
+
+ setInterval(() => {
+   app.$data.counter++
+ }, 1000);
+
+</script>
+</body>
+</html>
