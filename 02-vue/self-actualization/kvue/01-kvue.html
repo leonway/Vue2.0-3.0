@@ -15,7 +15,9 @@
     <div>{{counter}}</div>
     <div>{{counter}}</div>
     <div k-text="counter"></div>
-    <div k-html="desc"></div>
+    <div k-html="desc" @click="changeDesc"></div>
+    <input type="text" v-model="userName" />
+    <div>{{userName}}</div>
   </div>
 <!-- <script src="../node_modules/vue/dist/vue.js"></script> -->
 <script src="./kvue.js"></script>
@@ -24,16 +26,19 @@
    el:'#app',
    data:{
      counter:0,
-     desc:`<span style="color:red;">reamey 有点厉害！</span>`
-   }
+     desc:`<span style="color:red;">reamey is cool !</span>`,
+     userName: 'reamey'
+   },
+   methods: {
+    changeDesc(){
+      this.desc = `<span style="color:red;">reamey is so so cool !</span>`
+    }
+   },
  })
 
  setInterval(() => {
    app.counter++
  }, 1000);
- setInterval(() => {
-   app.desc = `<span style="color:blue;">reamey 有点厉害！</span>`
- }, 10000);
 </script>
 </body>
 </html>

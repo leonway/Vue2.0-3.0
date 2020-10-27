@@ -4,7 +4,7 @@ function defineReactive(obj,key,val) {
   const dep = new Dep()
   Object.defineProperty(obj,key,{
     get(){
-      console.log('get', key, val);
+      // console.log('get', key, val);
       //依赖收集
       Dep.target && dep.addDep(Dep.target)
       return val
@@ -15,7 +15,7 @@ function defineReactive(obj,key,val) {
         val=newVal
         dep.notify()
       }
-      console.log('set', key, val);
+      // console.log('set', key, val);
     }
   })
 }
@@ -46,19 +46,25 @@ class Observe{
   }
 }
 
+
 function  proxy(vm) {
-  Object.keys(vm.$data).forEach(key=>{
-    Object.defineProperty(vm,key,{
-      get(){
-        return vm.$data[key]
-      },
-      set(newVal){
-        if(vm.$data[key]!==newVal){
-          vm.$data[key] = newVal
-        }
-      }
-    })
-  })
+  const proxyKeys = ["$data","$methods"]
+  const proxyEvent = (originKey)=>{
+    // console.log(vm[originKey],originKey)
+     Object.keys(vm[originKey]).forEach(key=>{
+        Object.defineProperty(vm,key,{
+          get(){
+            return vm[originKey][key]
+          },
+          set(newVal){
+            if(vm[originKey][key]!==newVal){
+              vm[originKey][key] = newVal
+            }
+          }
+        })
+      })
+  }
+  proxyKeys.forEach(proxyKey=>proxyEvent(proxyKey))
 }
 
 // Kvue
@@ -68,10 +74,11 @@ class Vue {
   constructor(options){
     this.$options = options
     this.$data = options.data
-
+    this.$methods = options.methods
+    // console.log(this.$data)
     //data 响应式处理
     observe(this.$data)
-
+    // console.log(this.$data)
     //代理
     proxy(this)
 
@@ -106,10 +113,18 @@ class Compile{
           const exp = attr.value
           if(attrName.startsWith('k-')){
             const dir = attrName.substring(2)
-            console.log(dir);
+            // console.log(dir);
             
             // this[dir]&&this[dir](node,exp)
             this.update(node,exp,dir)
+          }
+          if(attrName.startsWith('@')){
+            const dir = attrName.substring(1)
+            // console.log(dir);
+            this.update(node,exp,dir)
+          }
+          if(attrName==='v-model'){
+            this.update(node,exp,'model')
           }
         })
       }else if(this.isInter(node)){
@@ -125,12 +140,15 @@ class Compile{
   }
 
   update(node,exp,dir){
+    // console.log(dir, exp)
+    const that = this
     // 初始化
     const fn = this[dir+"Updater"]
-    fn&&fn(node,this.$vm[exp])
+    fn&&fn.call(this,node,this.$vm[exp],exp)
+    
     // 更新
     new Watcher(this.$vm,exp,function(val){
-      fn&&fn(node,val)
+      fn&&fn.call(that,node,val,exp)
     })
   }
 
@@ -140,6 +158,24 @@ class Compile{
 
   htmlUpdater(node,value){
     node.innerHTML = value
+  }
+
+  clickUpdater(node,value){
+    // console.log(node,value,this)
+    if(value instanceof Function){
+      node.onclick = (...data)=>{
+        value.apply(this.$vm,data)
+      }
+    }
+  }
+
+  modelUpdater(node,value,key){
+    if(node.nodeName==="INPUT"){
+      node.value = value
+      node.oninput = (e)=>{
+        this.$vm[key] = e.target.value
+      }
+    }
   }
 
   //是否是插值表达式 
