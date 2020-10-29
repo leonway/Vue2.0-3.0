@@ -1,3 +1,17 @@
+// 数组的响应式操作
+// 1.替换数组原型中的7个方法
+const originalProto = Array.prototype
+// 备份 修改备份
+const arrayProto = Object.create(originalProto);
+["push","pop","shift","unshift"].forEach(method=>{
+  arrayProto[method] = function(...data) {
+    // 原始操作
+    originalProto[method].apply(this,data)
+    // 追加操作:通知更新
+    console.log('数组执行'+method+"操作:"+data);
+  }
+})
+
 function defineReactive(obj,key,val) {
   observe(val)
   //创建Dep实例
@@ -34,7 +48,12 @@ class Observe{
   constructor(value){
     this.value = value
     if(Array.isArray(value)){
-
+      value.__protp__ = arrayProto
+      // 对数组内部元素执行响应化
+    const keys = Object.keys(obj)
+    for(let i = 0; i<obj.length;i++){
+      new Observe(obj[i])
+    }
     }else{
       this.walk(value)
     }

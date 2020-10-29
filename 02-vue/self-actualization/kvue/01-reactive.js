@@ -37,7 +37,7 @@ function observe(obj) {
   }
   if(Array.isArray(obj)){
     // 覆盖原型 替换7个数组操作
-    obj.__protp__ = arrayProto
+    obj.__proto__ = arrayProto
     // 对数组内部元素执行响应化
     const keys = Object.keys(obj)
     for(let i = 0; i<obj.length;i++){
@@ -74,8 +74,8 @@ const obj = {
 }
 
 observe(obj)
-obj.foo
-obj.foo = 'f000000'
+// obj.foo
+// obj.foo = 'f000000'
 // obj.bar
 // obj.bar ='barrrrr'
 // obj.baz.ff
@@ -85,12 +85,13 @@ obj.foo = 'f000000'
 // obj.baz.jj
 // obj.baz.bb
 // obj.baz.bb = 'xx'
-set(obj,'dong','dong')
+// set(obj,'dong','dong')
 // obj.dong = 'dong'
-obj.dong
-obj.foo
+// obj.dong
+// obj.foo
 
-obj.arr[1]
+obj.arr[1]["foo"] ="bar" 
+obj.arr.push("bar")
 //array
 //push/pop/shift/unshift...使用 defineProperty拦截不到
 // 
