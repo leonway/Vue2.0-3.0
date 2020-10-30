@@ -52,7 +52,7 @@ class Observe{
       // 对数组内部元素执行响应化
     const keys = Object.keys(obj)
     for(let i = 0; i<obj.length;i++){
-      new Observe(obj[i])
+      observe(obj[i])
     }
     }else{
       this.walk(value)
