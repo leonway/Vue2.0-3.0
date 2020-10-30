@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 源码学习</title>
+  <!-- 
+    带有编译器的vue版本
+    在浏览器里 一遍 编译一遍执行 又叫运行时编译
+
+    平时webpack里面写的.vue 由webpack的vue-loader 提前编译好再在浏览器里执行 所以webpack 里用到的vue版本不带编译器
+   -->
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+    <div id="demo">
+      <h1>初始化流程</h1>
+      <p>{{foo}}</p>
+    </div>
+    <script>
+      // render > template > el
+      // 创建实例
+      const app = new Vue({
+        el:'#demo',
+        data:{
+          foo:'我可以'
+        }
+      })
+
+    </script>
+</body>
+</html>
