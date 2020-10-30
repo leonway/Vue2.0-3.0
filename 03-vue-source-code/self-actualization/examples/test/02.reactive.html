@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 源码学习</title>
+  <!-- 
+    带有编译器的vue版本
+    在浏览器里 一遍 编译一遍执行 又叫运行时编译
+
+    平时webpack里面写的.vue 由webpack的vue-loader 提前编译好再在浏览器里执行 所以webpack 里用到的vue版本不带编译器
+   -->
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+    <div id="demo">
+      <h1>数据响应化</h1>
+      <p>{{obj.foo}}</p>
+      <test : obj="obj"></test>
+    </div>
+    <script>
+      Vue.component('test',{
+        props:{
+          obj:{
+            type:String,
+          }
+        },
+        data(){
+          return {
+            object:{
+              bar:'bar'
+            }
+          }
+        },
+        template:`<div>
+          {{obj.foo}}
+          </div>`,
+        mounted() {
+          const that = this
+          // setTimeout(() => {
+          //   that.object.bar = 'barrrrr'            
+          // }, 2000);
+        },
+      })
+      // render > template > el
+      // 创建实例
+      const app = new Vue({
+        el:'#demo',
+        data:{
+          obj:{
+            foo:'foo'
+          }
+        }
+      })
+
+      setTimeout(() => {
+        app.obj.foo="fooooo"
+      }, 1000);
+
+    </script>
+</body>
+</html>
