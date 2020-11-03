@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 源码学习</title>
+  <!-- 
+    带有编译器的vue版本
+    在浏览器里 一遍 编译一遍执行 又叫运行时编译
+
+    平时webpack里面写的.vue 由webpack的vue-loader 提前编译好再在浏览器里执行 所以webpack 里用到的vue版本不带编译器
+   -->
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+    <div id="demo">
+      <h1>异步执行渲染</h1>
+      <p id="p1">{{random}}</p>
+    </div>
+    <script>
+      // const p = document.querySelector('#p1')
+      // render > template > el
+      // 创建实例
+      const app = new Vue({
+        el:'#demo',
+        data:{
+          random: 0
+        },
+        mounted(){
+
+          //  微任务队列 [promise1,flushCallBacks,promise2] 该队列js解析器根据执行先后顺序 添加
+          //  flushCallBacks [$nextTick1,flushSchedulerQueue,$nextTick1] 该队列通过src\core\util\next-tick.js 里的nextTick 添加
+          //  flushSchedulerQueue [random1,random2,random3] 该队列通过src\core\observer\scheduler.js 里的queueWatcher 添加
+          //  整体上看 [promise1,$nextTick1,random1,random2,random3,$nextTick1,promise2]
+          //从参数上看 [0,       ,0        ,random1,random2,random3, random3  ,random3 ]     
+          // 为什么$nextTick1,promise2在random2,random3之前出现 结果却是random3
+          // 因为 对于this.random 同一个key 的多次修改 只会触发同一个watcher  这个watcher在第一次random1 时就被加入了flushSchedulerQueue 后续修改不会触发入队 也不会改变他在队列里的顺序 
+          Promise.resolve().then(()=>{
+            console.log('promise1 p innerHtml',p1.innerHTML);
+          })
+
+          this.$nextTick(()=>{
+            console.log('第一次 p innerHtml',p1.innerHTML);
+          })
+
+          this.random = Math.random();
+          console.log('this.random1',this.random);
+
+          Promise.resolve().then(()=>{
+            console.log('promise2 p innerHtml',p1.innerHTML);
+          })
+
+          this.$nextTick(()=>{
+            console.log('第二次 p innerHtml',p1.innerHTML);
+          })
+
+          this.random = Math.random();
+          console.log('this.random2',this.random);
+
+          this.random = Math.random();
+          console.log('this.random3',this.random);
+          
+        }
+      })
+
+
+    </script>
+</body>
+</html>
