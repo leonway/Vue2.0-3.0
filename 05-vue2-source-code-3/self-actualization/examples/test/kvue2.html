@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue 源码学习</title>
+    <!-- 
+    带有编译器的vue版本
+    在浏览器里 一遍 编译一遍执行 又叫运行时编译
+
+    平时webpack里面写的.vue 由webpack的vue-loader 提前编译好再在浏览器里执行 所以webpack 里用到的vue版本不带编译器
+   -->
+    <script src="./kvue2.js"></script>
+  </head>
+  <body>
+    <div id="demo">
+      <h1>kVue2</h1>
+      <!-- <comp></comp> -->
+      <div>{{counter}}</div>
+    </div>
+    <script>
+      // Vue.component('comp',{
+      //   template:`<div>I am comp</div>`
+      // })
+
+      // render > template > el
+      // 创建实例
+      const app = new Vue({
+        el: "#demo",
+        data: {
+          counter: 0,
+        },
+        render(h) {
+          //dom 版
+          // const dom = document.createElement('div')
+          // dom.setAttribute('id',"demo")
+          // dom.innerHTML = ` <h1>kVue2</h1>
+          //                   <!-- <comp></comp> -->
+          //                   <div>${this.counter}</div>`
+
+          //vdom版
+          //没children
+          // return h("div", { id: "demo",title:this.counter + "" },this.counter + "");
+          //有children
+          return h("div", { id: "demo",title:this.counter + "" }, [
+            h("h1", null, "KVue2"),
+            h("div", null, this.counter + ""),
+          ]);
+        },
+      });
+      setInterval(() => {
+        app.counter++;
+      }, 1000);
+      // console.log(app.$options.render);
+    </script>
+  </body>
+</html>
