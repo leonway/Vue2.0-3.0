@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>composition-api</title>
+</head>
+<body>
+  <div id="app">
+
+    <p @click='add'>{{state.counter}}</p>
+    <p @click='add'>{{state.doubleCounter}}</p>
+  </div>
+  <script src="../dist/vue.global.js"></script>
+  <script>
+    const { createApp, reactive, computed, onMounted } = Vue
+
+    const app = createApp({
+      data() {
+        return {
+          key: 'fdasf'
+        }
+      },
+      setup(...data){
+        const ctx = getCurrentInstance()
+        console.log(ctx);
+        // 对象的响应式
+        const state = reactive({
+          counter:0,
+          doubleCounter:computed(()=>state.counter*2)
+        })
+
+        const add = ()=>{
+          state.counter++
+        }
+
+        // 生命周期钩子：onMounted
+        onMounted(()=>{
+          console.log('mounted');
+        })
+
+        return {
+          state,
+          add
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>
